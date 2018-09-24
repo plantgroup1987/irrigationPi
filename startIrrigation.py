@@ -2,9 +2,14 @@
 import time
 import serial, io, sys
 import RPi.GPIO as GPIO
+import urllib
 #pip3 install wifi // pip3 install wireless 
 from wifi import Cell, Scheme
 from wireless import Wireless
+try:
+    import httplib
+except:
+    import http.client as httplib
 
 #establish communication w LoRa module
 GPIO.setmode(GPIO.BCM)
@@ -20,9 +25,11 @@ motorController = 1
 GPIO.setup(motorController,GPIO.OUT)
 GPIO.output(motorController, GPIO.LOW)
 print("Motor controller pin set and switched to off.")
+# set indicator light to be used later in code
+ledIndic = 4 
 
 # set network credentials
-network = "FritoPendejoWiFi_EXT"
+network = "FritoPendejoWiFi"
 password = "Nb8a6qdq!"
 
 
@@ -63,12 +70,34 @@ getURL = "http://app.plantgroup.co/api/controllers/"+str(deviceID)+"/config/"
 ts1URL = "http://api.thingspeak.com/update.json?api_key="+str(controlProbe)+"&field1="+str(soilH202)
 
 #WiFi configuration
-#get all the cells iin the air
-ssids = [cell.ssid for cell in Cell.all('wlan0')]
-print("Available WiFi Networks:")
-print(ssids)
-# connect to local network
-wireless = Wireless()
-wireless.connect(ssid=str(network), password=str(password))
-print("Succesfully Connected to WiFi")
+# check if device currently is connected to internet
+conn = httplib.HTTPConnection("www.google.com", timeout=1)
+try:
+    conn.request("HEAD", "/")
+    conn.close()
+    internetConnection = True
+except:
+    conn.close()
+    internetConnection = False
 
+if internetConnection == False:
+    # search for available networks
+    try:
+        ssids = [cell.ssid for cell in Cell.all('wlan0')]
+        print("Available WiFi Networks:")
+        print(ssids)
+        # connect to local network
+        wireless = Wireless()
+        wireless.connect(ssid=str(network), password=str(password))
+        GPIO.setup(ledIndic, GPIO.OUT)
+        GPIO.output(ledIndic, GPIO.LOW)
+        print("Succesfully Connected to WiFi network.")
+    except:
+        GPIO.setup(ledIndic, GPIO.OUT)
+        GPIO.output(ledIndic, GPIO.HIGH)
+        print("There was an error connecting to WiFi")
+        
+else:
+    GPIO.setup(ledIndic, GPIO.OUT)
+    GPIO.output(ledIndic, GPIO.LOW)
+    print("Succesfully connected to WiFi network.")
