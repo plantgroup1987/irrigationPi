@@ -2,6 +2,9 @@
 import time
 import serial, io, sys
 import RPi.GPIO as GPIO
+#pip3 install wifi // pip3 install wireless 
+from wifi import Cell, Scheme
+from wireless import Wireless
 
 #establish communication w LoRa module
 GPIO.setmode(GPIO.BCM)
@@ -21,6 +24,7 @@ print("Motor controller pin set and switched to off.")
 # set network credentials
 network = "FritoPendejoWiFi_EXT"
 password = "Nb8a6qdq!"
+
 
 waterDuration = 0
 waterDelay = 0
@@ -53,12 +57,18 @@ watering = 0
 # variables for Thingspeak population
 soilH201 = 0
 soilH202 = 0
-
 # Rest API calls http://app.plantgroup.co/api/#/
 
 getURL = "http://app.plantgroup.co/api/controllers/"+str(deviceID)+"/config/"
 ts1URL = "http://api.thingspeak.com/update.json?api_key="+str(controlProbe)+"&field1="+str(soilH202)
 
-#WiFi configuration 
-
+#WiFi configuration
+#get all the cells iin the air
+ssids = [cell.ssid for cell in Cell.all('wlan0')]
+print("Available WiFi Networks:")
+print(ssids)
+# connect to local network
+wireless = Wireless()
+wireless.connect(ssid=str(network), password=str(password))
+print("Succesfully Connected to WiFi")
 
