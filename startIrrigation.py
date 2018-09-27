@@ -106,7 +106,13 @@ else:
 # API Calls
 # this is where request que was in init.lua
 url = "http://app.plantgroup.co/api/controllers/"+str(deviceID)+"/config/"
-response = urllib.request.urlopen(url).read()
+
+try:
+    response = urllib.request.urlopen(url).read()
+except urllib.error.HTTPError as err:
+    print("There was an issue with calling this URL")
+    print(err)
+    
 resp2 = str(response)[2:len(str(response))-1]
 jsonForm = json.loads(resp2)
 # parse jsonForm
@@ -141,7 +147,7 @@ for i in range(0,intervals):
 for i in range(0,intervals):
 	print("Stop: "+str(stop[i]))
 	print("Begin: "+str(begin[i]))
-
-print("Water Delay: "+str(waterDelay))
+	
+# recieve data from wireless probes 
 
 
